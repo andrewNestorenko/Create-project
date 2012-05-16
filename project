@@ -1,0 +1,33 @@
+#!/bin/sh
+projectName=$1
+
+repositoryFolder=/var/git/
+projectFolder=$repositoryFolder$projectName
+
+#creating directory for project in git folder
+test -d $projectFolder || mkdir $projectFolder
+git init --bare --shared=group $projectFolder
+
+echo "Name of developer in system:"
+read developerName
+
+echo "Input new group:"
+read group
+groupadd $group
+
+usermod -aG $group $developerName
+usermod -aG $group html 
+#usermod -aG $group qa
+
+#echo "Fill username:group:"
+#read rights
+
+cp /home/nestor/git-hook/pre-receive.sh ${projectFolder}hooks/pre-receive
+chown -R $developerName:$group $projectFolder
+chmod -R 775 $projectFolder
+
+#echo $projectFolder
+
+
+
+
