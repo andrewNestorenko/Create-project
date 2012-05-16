@@ -1,8 +1,20 @@
-#!/bin/sh
-projectName=$1
+#!/bin/bash
+if [ "$1" == "" ] 
+then
+	echo "Input project name:"
+	read projectName
+else 
+	projectName=$1
+fi
 
 repositoryFolder=/var/git/
 projectFolder=$repositoryFolder$projectName
+
+if [ "$projectFolder" == "$repositoryFolder" ] 
+then
+	echo "ERROR. Repository name is empty"
+	exit 0
+fi
 
 #creating directory for project in git folder
 test -d $projectFolder || mkdir $projectFolder
@@ -11,8 +23,9 @@ git init --bare --shared=group $projectFolder
 echo "Name of developer in system:"
 read developerName
 
-echo "Input new group:"
-read group
+#echo "Input new group:"
+group="p_${projectName}"
+#read group
 groupadd $group
 
 usermod -aG $group $developerName
@@ -27,7 +40,4 @@ chown -R $developerName:$group $projectFolder
 chmod -R 775 $projectFolder
 
 #echo $projectFolder
-
-
-
 
