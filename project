@@ -1,14 +1,37 @@
 #!/bin/bash
+
+#checking if user has already insert a project name with first param of script
 if [ "$1" == "" ] 
 then
+	#read project name from direct input
 	echo "Input project name:"
 	read projectName
 else 
 	projectName=$1
 fi
 
+echo "Name of developer in system:"
+read developerName
+
+id ${developerName} 2>/dev/null
+if [ $? -ne 0 ] 
+then
+		echo "User not found. You have to create user before"
+		exit 0
+fi
+
+group="p_${projectName}"
+#creating project group
+# -f exit successfully if the group already exists
+groupadd -f $group
+
+usermod -aG $group $developerName
+usermod -aG $group html
+
+#folder of git repository on local mashine
 repositoryFolder=/var/git/
-projectFolder=$repositoryFolder$projectName
+#glueing git dir with project name and we will have a prolject folder name
+projectFolder="${repositoryFolder}${projectName}"
 
 if [ "$projectFolder" == "$repositoryFolder" ] 
 then
@@ -18,26 +41,11 @@ fi
 
 #creating directory for project in git folder
 test -d $projectFolder || mkdir $projectFolder
-git init --bare --shared=group $projectFolder
+test -d "$projectFoldergit/.git" || git init --bare --shared=group $projectFolder
 
-echo "Name of developer in system:"
-read developerName
 
-#echo "Input new group:"
-group="p_${projectName}"
-#read group
-groupadd $group
-
-usermod -aG $group $developerName
-usermod -aG $group html 
-#usermod -aG $group qa
-
-#echo "Fill username:group:"
-#read rights
-
-cp /home/nestor/git-hook/pre-receive.sh ${projectFolder}hooks/pre-receive
+cp /home/nestor/git-hook/pre-receive.sh ${projectFolder}/hooks/pre-receive
 chown -R $developerName:$group $projectFolder
 chmod -R 775 $projectFolder
 
-#echo $projectFolder
 
